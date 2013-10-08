@@ -26,6 +26,7 @@
 #import <IOBluetooth/IOBluetoothUserLib.h>
 #import <IOBluetooth/objc/IOBluetoothSDPServiceRecord.h>
 #import <IOBluetooth/objc/IOBluetoothSDPUUID.h>
+#import <IOBluetooth/objc/IOBluetoothDevicePair.h>
 
 #import "BBServiceAdvertiser.h"
 
@@ -37,10 +38,11 @@ static NSString *kServiceItemKeyProtocolDescriptorList;
 // template service dictionaries for each pre-defined profile
 static NSDictionary *serialPortProfileDict;
 static NSDictionary *objectPushProfileDict;
-static NSDictionary *fileTransferProfileDict;	
-
+static NSDictionary *fileTransferProfileDict;
 
 @implementation BBServiceAdvertiser
+
+
 
 + (void)initialize
 {
@@ -111,17 +113,19 @@ static NSDictionary *fileTransferProfileDict;
 
 + (IOReturn)addRFCOMMServiceDictionary:(NSDictionary *)dict
 							  withName:(NSString *)serviceName
-								  UUID:(IOBluetoothSDPUUID *)uuid
+								  UUID:(NSString *)uuid
 							 channelID:(BluetoothRFCOMMChannelID *)outChannelID
 				   serviceRecordHandle:(BluetoothSDPServiceRecordHandle *)outServiceRecordHandle
 {	
 	if (dict == nil)
 		return kIOReturnError;
+
+	IOBluetoothSDPUUID* serviceUUID = [BBServiceAdvertiser getUUIDFromString:uuid];
 	
 	NSMutableDictionary *sdpEntries = [NSMutableDictionary dictionaryWithDictionary:dict];
 	[BBServiceAdvertiser updateServiceDictionary:sdpEntries
 										withName:serviceName
-										withUUID:uuid];
+										withUUID:serviceUUID];
 	
 	// publish the service
 	IOBluetoothSDPServiceRecordRef serviceRecordRef;
@@ -149,6 +153,53 @@ static NSDictionary *fileTransferProfileDict;
 + (IOReturn)removeService:(BluetoothSDPServiceRecordHandle)handle
 {
 	return IOBluetoothRemoveServiceWithRecordHandle(handle);
+}
+
++ (IOBluetoothSDPUUID *) getUUIDFromString: (NSString *) uuid
+{
+    IOBluetoothSDPUUID* serviceUUID = nil;
+    
+    if (uuid != nil) {
+		const char* puuid = [uuid UTF8String];
+		uint8 auuid[16];
+		int index = 0;
+		while (*puuid != '\0') {
+			if (*puuid == '-') {
+				++puuid;
+				continue;
+			}
+			char p = *puuid;
+			int code1 = 0;
+			int code2 = 0;
+            
+			if (p >= 48 && p <= 57) {
+				code1 = p - 48;
+			} else if (p >= 65 && p <= 70) {
+				code1 = p - 55;
+			} else if (p >= 97 && p <= 102) {
+				code1 = p - 87;
+			}
+            
+			p = *(puuid+1);
+			if (p >= 48 && p <= 57) {
+				code2 = p - 48;
+			} else if (p >= 65 && p <= 70) {
+				code2 = p - 55;
+			} else if (p >= 97 && p <= 102) {
+				code2 = p - 87;
+			}
+            
+			auuid[index++] = code1 * 16 + code2;
+            
+//            NSLog(@"%d: %X", index, code1*16+code2);
+            
+			puuid += 2;
+		}
+        
+		serviceUUID = [IOBluetoothSDPUUID uuidWithBytes:auuid length:16];
+	}
+    
+    return serviceUUID;
 }
 
 @end

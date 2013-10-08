@@ -164,7 +164,7 @@ def socket(proto=_lightbluecommon.RFCOMM):
 ### advertising services ###
 
 
-def advertise(name, sock, servicetype):
+def advertise(name, uuid, sock, servicetype):
     if not isinstance(name, types.StringTypes):
         raise TypeError("name must be string, was %s" % \
             type(name))
@@ -178,7 +178,7 @@ def advertise(name, sock, servicetype):
             result, finalchannelID, servicerecordhandle = _LightAquaBlue.BBServiceAdvertiser.addRFCOMMServiceDictionary_withName_UUID_channelID_serviceRecordHandle_(
                 _LightAquaBlue.BBServiceAdvertiser.serialPortProfileDictionary(), 
                 name, 
-                None, None, None)
+                uuid, None, None)
         except:
             result, finalchannelID, servicerecordhandle = _LightAquaBlue.BBServiceAdvertiser.addRFCOMMServiceDictionary_withName_UUID_channelID_serviceRecordHandle_(
                 _LightAquaBlue.BBServiceAdvertiser.serialPortProfileDictionary(), 
@@ -189,7 +189,7 @@ def advertise(name, sock, servicetype):
             result, finalchannelID, servicerecordhandle = _LightAquaBlue.BBServiceAdvertiser.addRFCOMMServiceDictionary_withName_UUID_channelID_serviceRecordHandle_(
                 _LightAquaBlue.BBServiceAdvertiser.objectPushProfileDictionary(), 
                 name, 
-                None, None, None)
+                uuid, None, None)
         except:
             result, finalchannelID, servicerecordhandle = _LightAquaBlue.BBServiceAdvertiser.addRFCOMMServiceDictionary_withName_UUID_channelID_serviceRecordHandle_(
                 _LightAquaBlue.BBServiceAdvertiser.objectPushProfileDictionary(), 
@@ -464,12 +464,23 @@ class _AsyncDeviceInquiry(Foundation.NSObject):
         if self.cb_completed:
             self.cb_completed(err, aborted)
     deviceInquiryComplete_error_aborted_ = objc.selector(
-        deviceInquiryComplete_error_aborted_, signature="v@:@iB")
+        deviceInquiryComplete_error_aborted_, signature="v@:@iZ")
              
     # - (void)deviceInquiryStarted:(IOBluetoothDeviceInquiry*)sender;             
     def deviceInquiryStarted_(self, inquiry):
         if self.cb_started:
             self.cb_started()
+
+    # - (void)deviceInquiryDeviceNameUpdated:device:devicesRemaining:
+    def deviceInquiryDeviceNameUpdated_device_devicesRemaining_(self, sender,
+                                                              device,
+                                                              devicesRemaining):
+        pass
+
+    # - (void)deviceInquiryUpdatingDeviceNamesStarted:devicesRemaining:
+    def deviceInquiryUpdatingDeviceNamesStarted_devicesRemaining_(self, sender,
+                                                                devicesRemaining):
+        pass
         
         
 ### utility methods ###

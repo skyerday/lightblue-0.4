@@ -112,5 +112,9 @@
 <arg index='3' type_modifier='o'/>
 <arg index='4' type_modifier='o'/>
 </method>
+<method class_method='true' selector='getUUIDFromString_'>
+    <arg index='0' type_modifier='@' />
+    <retval type='@' />
+</method>
 </class>
 </signatures>
